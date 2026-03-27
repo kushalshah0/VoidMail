@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Free disposable temporary email. Instant, private, zero tracking." />
+    <meta name="theme-color" content="#ffffff" />
+    <script>
+      (function() {
+        const stored = localStorage.getItem('voidmail-theme');
+        let dark = false;
+        if (stored === 'dark') dark = true;
+        else if (stored === 'light') dark = false;
+        else dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (dark) document.documentElement.classList.add('dark');
+      })();
+    </script>
     <title>VoidMail — Instant Disposable Email</title>
   </head>
   <body>
