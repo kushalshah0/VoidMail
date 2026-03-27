@@ -37,18 +37,14 @@ export default function CountdownTimer({ expiresAt }) {
   }, [expiresAt]);
 
   const colorMap = {
-    normal: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    warning: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
-    critical: 'text-red-600 dark:text-red-400 bg-red-500/10 border-red-500/20',
+    normal: 'text-emerald-600 dark:text-emerald-400',
+    warning: 'text-amber-600 dark:text-amber-400',
+    critical: 'text-red-500 dark:text-red-400',
   };
 
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-sm font-mono ${colorMap[urgency]}`}>
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      <span>{timeLeft}</span>
-    </div>
+    <span className={`font-mono text-sm font-medium ${colorMap[urgency]}`}>
+      {timeLeft}
+    </span>
   );
 }
