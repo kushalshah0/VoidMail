@@ -1,24 +1,24 @@
 # VoidMail
 
-Temporary email service built on Cloudflare.
+Temporary disposable email service. Generate random email addresses that auto-expire. No signup, no tracking.
 
 ## Stack
 
-- **Frontend:** React + Vite + Tailwind
-- **Backend:** Cloudflare Pages Functions
-- **Storage:** Cloudflare KV
-- **Email:** Cloudflare Email Routing + Workers
+- Frontend: React + Vite + Tailwind
+- Backend: Cloudflare Pages Functions
+- Storage: Cloudflare KV (auto-expiry)
+- Email: Cloudflare Email Routing + Workers
 
 ## Quick Start
 
 ```bash
-# Install
+# Install dependencies
 npm install
 
-# Dev
+# Run locally
 npm run pages:dev
 
-# Deploy
+# Deploy to Cloudflare
 npm run pages:deploy
 ```
 
@@ -30,9 +30,10 @@ npm install
 npm run deploy
 ```
 
-## Env
+## Environment
 
-```bash
+Create `.env`:
+```
 VITE_EMAIL_DOMAIN=yourdomain.com
 ```
 
