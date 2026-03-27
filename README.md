@@ -25,9 +25,11 @@ npm run pages:deploy
 ## Email Worker
 
 ```bash
-cd email-worker
-npm install
-npm run deploy
+# Run locally
+cd email-worker && npm run dev
+
+# Deploy
+cd email-worker && npm run deploy
 ```
 
 ## Environment
