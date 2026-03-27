@@ -68,24 +68,30 @@ export default function HomePage() {
   return (
     <div className="animate-fade-in">
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-600/5 via-transparent to-transparent" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-600/5 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-b 
+                        from-brand-50 dark:from-brand-600/5 
+                        via-transparent to-transparent" />
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] 
+                        bg-brand-100/50 dark:bg-brand-600/5 
+                        rounded-full blur-3xl" />
 
         <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 badge-blue mb-6">
-              <span className="w-1.5 h-1.5 bg-brand-400 rounded-full animate-pulse" />
+              <span className="w-1.5 h-1.5 bg-brand-500 dark:bg-brand-400 rounded-full animate-pulse" />
               Zero Tracking • Auto-Delete
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-light-900 dark:text-white mb-6 leading-tight">
               Disposable Email.{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600">
-                Instant &amp; Private.
+              <span className="text-transparent bg-clip-text bg-gradient-to-r 
+                               from-brand-500 to-brand-700 
+                               dark:from-brand-400 dark:to-brand-600">
+                Instant & Private.
               </span>
             </h1>
 
-            <p className="text-lg text-dark-400 leading-relaxed">
+            <p className="text-lg text-light-600 dark:text-dark-400 leading-relaxed">
               Generate a temporary inbox instantly. Protect your real email from
               spam, bots, and unwanted signups. Powered by Cloudflare's edge network.
             </p>
@@ -93,13 +99,13 @@ export default function HomePage() {
 
           <div className="max-w-md mx-auto">
             <div className="card glow">
-              <div className="flex mb-6 bg-dark-800 rounded-xl p-1">
+              <div className="flex mb-6 bg-light-100 dark:bg-dark-800 rounded-xl p-1">
                 <button
                   onClick={() => setTab('generate')}
                   className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
                     ${tab === 'generate'
                       ? 'bg-brand-600 text-white shadow-lg'
-                      : 'text-dark-400 hover:text-dark-200'
+                      : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
                     }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,7 +118,7 @@ export default function HomePage() {
                   className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
                     ${tab === 'recover'
                       ? 'bg-brand-600 text-white shadow-lg'
-                      : 'text-dark-400 hover:text-dark-200'
+                      : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
                     }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,10 +136,10 @@ export default function HomePage() {
 
       <section className="max-w-6xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-white mb-3">
+          <h2 className="text-2xl font-bold text-light-900 dark:text-white mb-3">
             Why VoidMail?
           </h2>
-          <p className="text-dark-400">
+          <p className="text-light-500 dark:text-dark-400">
             Built on Cloudflare's edge — fast, private, and ephemeral by design.
           </p>
         </div>
@@ -146,7 +152,7 @@ export default function HomePage() {
       </section>
 
       <section className="max-w-4xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-white text-center mb-12">
+        <h2 className="text-2xl font-bold text-light-900 dark:text-white text-center mb-12">
           How It Works
         </h2>
 
@@ -157,11 +163,13 @@ export default function HomePage() {
             { step: '03', title: 'Auto-Destruct', desc: 'Everything is permanently deleted when the timer expires.' },
           ].map((item) => (
             <div key={item.step} className="text-center">
-              <div className="text-4xl font-bold text-brand-600/30 mb-3">
+              <div className="text-4xl font-bold text-brand-600 dark:text-brand-400 mb-3">
                 {item.step}
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
-              <p className="text-dark-400 text-sm">{item.desc}</p>
+              <h3 className="text-lg font-semibold text-light-900 dark:text-white mb-2">
+                {item.title}
+              </h3>
+              <p className="text-light-600 dark:text-dark-400 text-sm">{item.desc}</p>
             </div>
           ))}
         </div>
