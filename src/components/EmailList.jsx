@@ -7,13 +7,13 @@ export default function EmailList({ emails, selectedId, onSelect }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-light-700 dark:text-dark-300 mb-2">
+        <h3 className="text-lg font-medium text-light-800 dark:text-dark-300 mb-2">
           No emails yet
         </h3>
-        <p className="text-light-500 dark:text-dark-500 text-sm max-w-xs">
+        <p className="text-light-600 dark:text-dark-500 text-sm max-w-xs">
           Emails sent to your temporary address will appear here automatically.
         </p>
-        <div className="mt-6 flex items-center gap-2 text-light-400 dark:text-dark-600 text-xs">
+        <div className="mt-6 flex items-center gap-2 text-light-500 dark:text-dark-600 text-xs">
           <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
