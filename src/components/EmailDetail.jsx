@@ -52,13 +52,12 @@ export default function EmailDetail({ email, onBack }) {
 
       <div className="flex-1 overflow-auto p-4">
         {email.html ? (
-          <div className="bg-white rounded-xl p-4 text-light-900 shadow-sm border border-light-200 dark:border-dark-700">
+          <div className="bg-white dark:bg-dark-900 rounded-xl p-4 text-light-900 dark:text-dark-100 shadow-sm border border-light-200 dark:border-dark-700">
             <iframe
               srcDoc={email.html}
               title="Email content"
               className="w-full min-h-[400px] border-0"
               sandbox="allow-same-origin"
-              style={{ colorScheme: 'light' }}
             />
           </div>
         ) : (
