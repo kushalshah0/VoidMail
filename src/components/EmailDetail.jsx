@@ -52,18 +52,77 @@ export default function EmailDetail({ email, onBack }) {
 
       <div className="flex-1 overflow-auto p-4">
         {email.html ? (
-          <div className="bg-white dark:bg-dark-900 rounded-xl p-4 text-light-900 dark:text-dark-100 shadow-sm border border-light-200 dark:border-dark-700">
+          <div className="bg-white dark:bg-dark-900 rounded-xl shadow-sm border border-light-200 dark:border-dark-700 overflow-hidden">
             <iframe
-              srcDoc={email.html}
+              srcDoc={`<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; }
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 20px;
+    margin: 0;
+    background: transparent;
+    color: #1f2937;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e5e7eb; }
+  }
+  img { max-width: 100%; height: auto; border-radius: 4px; }
+  a { color: #2563eb; text-decoration: underline; }
+  @media (prefers-color-scheme: dark) {
+    a { color: #60a5fa; }
+  }
+  blockquote { 
+    border-left: 4px solid #e5e7eb;
+    margin: 16px 0;
+    padding: 8px 16px;
+    color: #4b5563;
+    background: #f9fafb;
+    border-radius: 0 4px 4px 0;
+  }
+  @media (prefers-color-scheme: dark) {
+    blockquote { 
+      border-color: #4b5563;
+      color: #9ca3af;
+      background: #1f2937;
+    }
+  }
+  pre { 
+    background: #f3f4f6;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 13px;
+  }
+  @media (prefers-color-scheme: dark) {
+    pre { background: #1f2937; }
+  }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { padding: 8px; border: 1px solid #e5e7eb; }
+  @media (prefers-color-scheme: dark) {
+    td, th { border-color: #4b5563; }
+  }
+  h1, h2, h3, h4, h5, h6 { margin: 16px 0 8px; font-weight: 600; }
+  p { margin: 12px 0; }
+</style>
+</head>
+<body>${email.html}</body>
+</html>`}
               title="Email content"
               className="w-full min-h-[400px] border-0"
               sandbox="allow-same-origin"
             />
           </div>
         ) : (
-          <pre className="whitespace-pre-wrap text-light-700 dark:text-dark-300 text-sm font-sans leading-relaxed">
-            {email.text || 'No content'}
-          </pre>
+          <div className="bg-white dark:bg-dark-900 rounded-xl p-5 shadow-sm border border-light-200 dark:border-dark-700">
+            <pre className="whitespace-pre-wrap text-light-700 dark:text-dark-300 text-sm font-sans leading-relaxed m-0">
+              {email.text || 'No content'}
+            </pre>
+          </div>
         )}
       </div>
     </div>
