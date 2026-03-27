@@ -6,7 +6,10 @@ import InboxPage from './pages/InboxPage';
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col 
+                    bg-light-50 dark:bg-dark-950 
+                    text-light-900 dark:text-dark-100
+                    transition-colors duration-300">
       <Header />
       <main className="flex-1">
         <Routes>
