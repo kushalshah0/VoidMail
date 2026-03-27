@@ -20,10 +20,8 @@ export default function RecoveryForm() {
     setLoading(true);
     try {
       const data = await recoverInbox(username.toLowerCase(), recoveryKey.toUpperCase());
-
       sessionStorage.setItem(`recovery_${username.toLowerCase()}`, recoveryKey.toUpperCase());
       sessionStorage.setItem(`expires_${username.toLowerCase()}`, data.expiresAt);
-
       navigate(`/inbox/${username.toLowerCase()}`);
     } catch (err) {
       setNotification({
@@ -50,7 +48,7 @@ export default function RecoveryForm() {
       )}
 
       <div>
-        <label className="block text-sm font-medium text-dark-300 mb-2">
+        <label className="block text-sm font-medium text-light-600 dark:text-dark-300 mb-2">
           Username
         </label>
         <div className="relative">
@@ -62,14 +60,15 @@ export default function RecoveryForm() {
             className="input-field pr-36"
             autoComplete="off"
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 text-sm">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 
+                           text-light-500 dark:text-dark-500 text-sm">
             @{domain}
           </span>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-dark-300 mb-2">
+        <label className="block text-sm font-medium text-light-600 dark:text-dark-300 mb-2">
           Recovery Key
         </label>
         <input

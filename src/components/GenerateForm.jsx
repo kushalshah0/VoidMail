@@ -34,11 +34,9 @@ export default function GenerateForm() {
     setLoading(true);
     try {
       const data = await createInbox(username.toLowerCase(), ttlHours);
-
       sessionStorage.setItem(`recovery_${username.toLowerCase()}`, data.recoveryKey);
       sessionStorage.setItem(`created_${username.toLowerCase()}`, data.createdAt);
       sessionStorage.setItem(`expires_${username.toLowerCase()}`, data.expiresAt);
-
       navigate(`/inbox/${username.toLowerCase()}`);
     } catch (err) {
       setNotification({
@@ -55,14 +53,11 @@ export default function GenerateForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {notification && (
-        <Notification
-          {...notification}
-          onClose={() => setNotification(null)}
-        />
+        <Notification {...notification} onClose={() => setNotification(null)} />
       )}
 
       <div>
-        <label className="block text-sm font-medium text-dark-300 mb-2">
+        <label className="block text-sm font-medium text-light-600 dark:text-dark-300 mb-2">
           Choose your temporary address
         </label>
         <div className="flex gap-2">
@@ -77,7 +72,8 @@ export default function GenerateForm() {
               autoComplete="off"
               spellCheck="false"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-500 text-sm">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 
+                             text-light-500 dark:text-dark-500 text-sm">
               @{domain}
             </span>
           </div>
@@ -95,7 +91,7 @@ export default function GenerateForm() {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-dark-300 mb-2">
+        <label className="block text-sm font-medium text-light-600 dark:text-dark-300 mb-2">
           Inbox lifetime
         </label>
         <div className="grid grid-cols-4 gap-2">
@@ -107,7 +103,7 @@ export default function GenerateForm() {
               className={`py-2 px-3 rounded-xl text-sm font-medium transition-all
                 ${ttlHours === h
                   ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/25'
-                  : 'bg-dark-800 text-dark-400 hover:bg-dark-700 border border-dark-700'
+                  : 'bg-light-100 dark:bg-dark-800 text-light-600 dark:text-dark-400 hover:bg-light-200 dark:hover:bg-dark-700 border border-light-300 dark:border-dark-700'
                 }`}
             >
               {h}h
