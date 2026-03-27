@@ -21,7 +21,7 @@ export default function EmailDetail({ email, onBack }) {
       <div className="p-4 border-b border-light-200 dark:border-dark-800">
         <button
           onClick={onBack}
-          className="md:hidden text-light-500 dark:text-dark-400 
+          className="lg:hidden text-light-500 dark:text-dark-400 
                      hover:text-light-700 dark:hover:text-white 
                      text-sm mb-3 flex items-center gap-1"
         >
