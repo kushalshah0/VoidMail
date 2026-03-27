@@ -1,4 +1,6 @@
+/** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
@@ -28,6 +30,19 @@ export default {
           800: '#2a2b2f',
           900: '#1a1b1e',
           950: '#111114',
+        },
+        light: {
+          50: '#ffffff',
+          100: '#fafafa',
+          200: '#f5f5f5',
+          300: '#e8e8eb',
+          400: '#d1d1d6',
+          500: '#a1a1aa',
+          600: '#71717a',
+          700: '#52525b',
+          800: '#3f3f46',
+          900: '#27272a',
+          950: '#18181b',
         },
       },
       animation: {
