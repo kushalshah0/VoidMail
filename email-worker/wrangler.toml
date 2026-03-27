@@ -1,0 +1,7 @@
+name = "voidmail-email-worker"
+main = "src/worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "VOIDMAIL_KV"
+id = "9502f2810b254def9880682b913d6c0d"
