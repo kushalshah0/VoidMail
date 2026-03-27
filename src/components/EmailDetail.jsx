@@ -3,8 +3,8 @@ export default function EmailDetail({ email, onBack }) {
     return (
       <div className="flex items-center justify-center h-full text-light-500 dark:text-dark-500">
         <div className="text-center">
-          <div className="w-14 h-14 mb-3 rounded-full bg-light-200 dark:bg-dark-800 flex items-center justify-center mx-auto">
-            <svg className="w-7 h-7 text-light-400 dark:text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-14 h-14 mb-3 rounded-full bg-light-100 dark:bg-dark-800 flex items-center justify-center mx-auto">
+            <svg className="w-7 h-7 text-light-500 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>

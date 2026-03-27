@@ -2,15 +2,15 @@ export default function EmailList({ emails, selectedId, onSelect }) {
   if (emails.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-16 h-16 mb-4 rounded-full bg-light-200 dark:bg-dark-800 flex items-center justify-center">
-          <svg className="w-8 h-8 text-light-400 dark:text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 mb-4 rounded-full bg-light-100 dark:bg-dark-800 flex items-center justify-center">
+          <svg className="w-8 h-8 text-light-500 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-light-800 dark:text-dark-300 mb-2">
+        <h3 className="text-lg font-semibold text-light-800 dark:text-dark-300 mb-2">
           No emails yet
         </h3>
-        <p className="text-light-600 dark:text-dark-500 text-sm max-w-xs">
+        <p className="text-light-700 dark:text-dark-500 text-sm max-w-xs font-medium">
           Emails sent to your temporary address will appear here automatically.
         </p>
         <div className="mt-6 flex items-center gap-2 text-light-500 dark:text-dark-600 text-xs">
