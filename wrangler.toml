@@ -10,3 +10,7 @@ INBOX_TTL = "86400"
 binding = "VOIDMAIL_KV"
 id = "9502f2810b254def9880682b913d6c0d"
 preview_id = "cc5d3e43876a498daeb060189c09e138"
+
+[[services]]
+binding = "EMAIL_WORKER"
+service = "voidmail-email-worker"

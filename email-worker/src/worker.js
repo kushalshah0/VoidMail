@@ -1,6 +1,7 @@
 export default {
   async email(message, env) {
     const KV = env.VOIDMAIL_KV;
+    const BROADCASTER = env.SSE_BROADCASTER;
 
     try {
       const toAddress = message.to;
@@ -55,6 +56,16 @@ export default {
       await KV.put(`emails:${username}`, JSON.stringify(emailList), {
         expirationTtl: remainingTtl,
       });
+
+      if (BROADCASTER) {
+        try {
+          const doId = BROADCASTER.idFromName(username);
+          const doStub = BROADCASTER.get(doId);
+          await doStub.broadcast(username, { emails: emailList });
+        } catch (e) {
+          console.error('Broadcast error:', e);
+        }
+      }
 
       console.log(`Email stored: ${emailId} for ${username}`);
     } catch (err) {
@@ -359,3 +370,27 @@ function generateId() {
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+export { SseBroadcaster };
+
+export default {
+  email(message, env) {
+    return module.exports.default.email(message, env);
+  },
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    
+    if (url.pathname === '/sse' || url.searchParams.has('username')) {
+      const username = url.searchParams.get('username');
+      if (!username) {
+        return new Response('Missing username', { status: 400 });
+      }
+
+      const doId = env.SSE_BROADCASTER.idFromName(username);
+      const doStub = env.SSE_BROADCASTER.get(doId);
+      return doStub.fetch(request);
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
+};
