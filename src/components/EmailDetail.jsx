@@ -65,17 +65,11 @@ export default function EmailDetail({ email, onBack }) {
     line-height: 1.6;
     padding: 20px;
     margin: 0;
-    background: transparent;
+    background: #ffffff;
     color: #1f2937;
-  }
-  @media (prefers-color-scheme: dark) {
-    body { color: #e5e7eb; }
   }
   img { max-width: 100%; height: auto; border-radius: 4px; }
   a { color: #2563eb; text-decoration: underline; }
-  @media (prefers-color-scheme: dark) {
-    a { color: #60a5fa; }
-  }
   blockquote { 
     border-left: 4px solid #e5e7eb;
     margin: 16px 0;
@@ -84,13 +78,6 @@ export default function EmailDetail({ email, onBack }) {
     background: #f9fafb;
     border-radius: 0 4px 4px 0;
   }
-  @media (prefers-color-scheme: dark) {
-    blockquote { 
-      border-color: #4b5563;
-      color: #9ca3af;
-      background: #1f2937;
-    }
-  }
   pre { 
     background: #f3f4f6;
     padding: 12px;
@@ -98,14 +85,8 @@ export default function EmailDetail({ email, onBack }) {
     overflow-x: auto;
     font-size: 13px;
   }
-  @media (prefers-color-scheme: dark) {
-    pre { background: #1f2937; }
-  }
   table { border-collapse: collapse; width: 100%; }
   td, th { padding: 8px; border: 1px solid #e5e7eb; }
-  @media (prefers-color-scheme: dark) {
-    td, th { border-color: #4b5563; }
-  }
   h1, h2, h3, h4, h5, h6 { margin: 16px 0 8px; font-weight: 600; }
   p { margin: 12px 0; }
 </style>
