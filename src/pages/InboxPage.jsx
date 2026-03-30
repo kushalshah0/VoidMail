@@ -6,7 +6,7 @@ import EmailDetail from '../components/EmailDetail';
 import CopyButton from '../components/CopyButton';
 import CountdownTimer from '../components/CountdownTimer';
 import Notification from '../components/Notification';
-import usePolling from '../hooks/usePolling';
+import useEmailSubscription from '../hooks/useEmailSubscription';
 
 export default function InboxPage() {
   const { username } = useParams();
@@ -50,7 +50,14 @@ export default function InboxPage() {
     }
   }, [username]);
 
-  usePolling(fetchEmails, 10000);
+  useEmailSubscription(username, (newEmails) => {
+    setEmails(newEmails);
+    setLastUpdated(new Date());
+  });
+
+  useEffect(() => {
+    fetchEmails();
+  }, [fetchEmails]);
 
   const handleSelectEmail = async (emailId) => {
     setSelectedId(emailId);
