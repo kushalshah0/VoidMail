@@ -171,13 +171,7 @@ export default function EmailDetail({ email, onBack }) {
               ? 'bg-dark-950 border-dark-700'
               : 'bg-white border-light-200'
           }`}>
-            <div className={`px-4 py-2 text-xs border-b ${
-              isDark
-                ? 'bg-dark-900 text-dark-400 border-dark-800'
-                : 'bg-light-50 text-light-500 border-light-200'
-            }`}>
-              Email HTML is rendered on an isolated light canvas to preserve the sender's original styling.
-            </div>
+            
             <iframe
               key={email.id}
               ref={iframeRef}

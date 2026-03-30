@@ -253,7 +253,8 @@ function decodeQuotedPrintable(input, charset = 'utf-8') {
     bytes.push(normalized.charCodeAt(i));
   }
 
-  return decodeBytes(bytes, charset);
+  const decoded = decodeBytes(bytes, charset);
+  return decoded.replace(/=+$/, '').trim();
 }
 
 function decodeBase64(input, charset = 'utf-8') {
