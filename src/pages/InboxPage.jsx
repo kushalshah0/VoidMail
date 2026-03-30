@@ -50,7 +50,7 @@ export default function InboxPage() {
     }
   }, [username]);
 
-  usePolling(fetchEmails, 1000);
+  usePolling(fetchEmails, 10000);
 
   const handleSelectEmail = async (emailId) => {
     setSelectedId(emailId);
