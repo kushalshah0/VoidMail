@@ -19,6 +19,7 @@ export default function InboxPage() {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
   const [showRecovery, setShowRecovery] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   const domain = import.meta.env.VITE_EMAIL_DOMAIN || 'yourdomain.com';
   const emailAddress = `${username}@${domain}`;
@@ -43,12 +44,13 @@ export default function InboxPage() {
     try {
       const data = await getEmails(username);
       setEmails(data.emails || []);
+      setLastUpdated(new Date());
     } catch (err) {
       console.error('Failed to fetch emails:', err);
     }
   }, [username]);
 
-  usePolling(fetchEmails, 5000);
+  usePolling(fetchEmails, 1000);
 
   const handleSelectEmail = async (emailId) => {
     setSelectedId(emailId);
@@ -189,11 +191,18 @@ export default function InboxPage() {
             <h2 className="text-sm font-medium text-light-600 dark:text-dark-300">
               Inbox ({emails.length})
             </h2>
-            <button onClick={fetchEmails} className="p-1.5 text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-white" title="Refresh">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              {lastUpdated && (
+                <span className="text-xs text-light-400 dark:text-dark-500">
+                  {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+              <button onClick={fetchEmails} className="p-1.5 text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-white" title="Refresh">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="overflow-auto max-h-[65vh]">
             <EmailList
