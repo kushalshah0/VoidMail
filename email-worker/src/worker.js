@@ -13,15 +13,15 @@ export default {
       }
 
       const rawEmail = await new Response(message.raw).text();
-
       const emailContent = parseEmail(rawEmail, message);
-
       const emailId = generateId();
 
       const remainingTtl = Math.max(
         60,
         Math.floor((new Date(inboxData.expiresAt) - Date.now()) / 1000)
       );
+
+      const snippetSource = emailContent.text || htmlToText(emailContent.html);
 
       const fullEmail = {
         id: emailId,
@@ -31,7 +31,7 @@ export default {
         subject: emailContent.subject,
         text: emailContent.text,
         html: emailContent.html,
-        snippet: emailContent.text?.substring(0, 150) || '',
+        snippet: snippetSource.substring(0, 150),
         headers: emailContent.headers,
         receivedAt: new Date().toISOString(),
         read: false,
@@ -47,7 +47,7 @@ export default {
         id: emailId,
         from: message.from,
         subject: emailContent.subject,
-        snippet: emailContent.text?.substring(0, 100) || '',
+        snippet: snippetSource.substring(0, 100),
         receivedAt: fullEmail.receivedAt,
         read: false,
       });
@@ -57,7 +57,6 @@ export default {
       });
 
       console.log(`Email stored: ${emailId} for ${username}`);
-
     } catch (err) {
       console.error('Email worker error:', err);
     }
@@ -73,75 +72,26 @@ function parseEmail(rawEmail, message) {
   };
 
   try {
-    const headerBodySplit = rawEmail.indexOf('\r\n\r\n');
-    const headerSection = rawEmail.substring(0, headerBodySplit);
-    const bodySection = rawEmail.substring(headerBodySplit + 4);
+    const normalizedEmail = normalizeLineEndings(rawEmail);
+    const { headers, body } = splitHeadersAndBody(normalizedEmail);
 
-    const headerLines = headerSection.split('\r\n');
-    let currentHeader = '';
+    result.headers = headers;
+    result.subject = decodeHeaderValue(
+      headers.subject || message.headers?.get('subject') || '(No Subject)'
+    );
 
-    for (const line of headerLines) {
-      if (line.startsWith(' ') || line.startsWith('\t')) {
-        currentHeader += ' ' + line.trim();
-      } else {
-        if (currentHeader) {
-          const colonIndex = currentHeader.indexOf(':');
-          if (colonIndex > -1) {
-            const key = currentHeader.substring(0, colonIndex).trim().toLowerCase();
-            const value = currentHeader.substring(colonIndex + 1).trim();
-            result.headers[key] = value;
-          }
-        }
-        currentHeader = line;
-      }
-    }
+    const content = extractBestContent(headers, body);
 
-    if (currentHeader) {
-      const colonIndex = currentHeader.indexOf(':');
-      if (colonIndex > -1) {
-        const key = currentHeader.substring(0, colonIndex).trim().toLowerCase();
-        const value = currentHeader.substring(colonIndex + 1).trim();
-        result.headers[key] = value;
-      }
-    }
+    result.html = content.html || '';
+    result.text = content.text || '';
 
-    result.subject = result.headers['subject'] || message.headers?.get('subject') || '(No Subject)';
-    result.subject = decodeHeaderValue(result.subject);
-
-    const contentType = result.headers['content-type'] || '';
-
-    if (contentType.includes('multipart')) {
-      const boundaryMatch = contentType.match(/boundary="?([^";\s]+)"?/);
-      if (boundaryMatch) {
-        const boundary = boundaryMatch[1];
-        const parts = bodySection.split(`--${boundary}`);
-
-        for (const part of parts) {
-          if (part.trim() === '--' || part.trim() === '') continue;
-
-          const partHeaderEnd = part.indexOf('\r\n\r\n');
-          if (partHeaderEnd === -1) continue;
-
-          const partHeaders = part.substring(0, partHeaderEnd).toLowerCase();
-          const partBody = part.substring(partHeaderEnd + 4).trim();
-
-          if (partHeaders.includes('text/html')) {
-            result.html = partBody;
-          } else if (partHeaders.includes('text/plain')) {
-            result.text = partBody;
-          }
-        }
-      }
-    } else if (contentType.includes('text/html')) {
-      result.html = bodySection;
-    } else {
-      result.text = bodySection;
+    if (!result.text && result.html) {
+      result.text = htmlToText(result.html);
     }
 
     if (result.html) {
       result.html = sanitizeHtml(result.html);
     }
-
   } catch (err) {
     console.error('Email parse error:', err);
     result.text = rawEmail;
@@ -150,21 +100,227 @@ function parseEmail(rawEmail, message) {
   return result;
 }
 
-function decodeHeaderValue(value) {
+function normalizeLineEndings(value) {
+  return (value || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+}
+
+function splitHeadersAndBody(input) {
+  const separatorIndex = input.indexOf('\n\n');
+
+  if (separatorIndex === -1) {
+    return {
+      headers: parseHeaders(input),
+      body: '',
+    };
+  }
+
+  return {
+    headers: parseHeaders(input.slice(0, separatorIndex)),
+    body: input.slice(separatorIndex + 2),
+  };
+}
+
+function parseHeaders(headerSection) {
+  const headers = {};
+  const rawLines = normalizeLineEndings(headerSection).split('\n');
+  const lines = [];
+
+  for (const line of rawLines) {
+    if ((line.startsWith(' ') || line.startsWith('\t')) && lines.length > 0) {
+      lines[lines.length - 1] += ` ${line.trim()}`;
+    } else {
+      lines.push(line);
+    }
+  }
+
+  for (const line of lines) {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex === -1) continue;
+
+    const key = line.slice(0, colonIndex).trim().toLowerCase();
+    const value = line.slice(colonIndex + 1).trim();
+    headers[key] = value;
+  }
+
+  return headers;
+}
+
+function extractBestContent(headers, body) {
+  const contentType = parseContentType(headers['content-type']);
+  const disposition = (headers['content-disposition'] || '').toLowerCase();
+  const encoding = (headers['content-transfer-encoding'] || '').toLowerCase();
+  const charset = contentType.params.charset || 'utf-8';
+
+  if (disposition.includes('attachment')) {
+    return { html: '', text: '' };
+  }
+
+  if (contentType.mime.startsWith('multipart/')) {
+    const boundary = contentType.params.boundary;
+    if (!boundary) {
+      return { html: '', text: '' };
+    }
+
+    const parts = splitMultipartBody(body, boundary);
+    let bestHtml = '';
+    let bestText = '';
+
+    for (const part of parts) {
+      const { headers: partHeaders, body: partBody } = splitHeadersAndBody(part);
+      const content = extractBestContent(partHeaders, partBody);
+
+      if (!bestHtml && content.html) bestHtml = content.html;
+      if (!bestText && content.text) bestText = content.text;
+
+      if (bestHtml && bestText) break;
+    }
+
+    return { html: bestHtml, text: bestText };
+  }
+
+  const decodedBody = decodeBody(body, encoding, charset);
+
+  if (contentType.mime === 'text/html') {
+    return { html: decodedBody, text: '' };
+  }
+
+  if (contentType.mime === 'text/plain') {
+    return { html: '', text: decodedBody };
+  }
+
+  return { html: '', text: '' };
+}
+
+function splitMultipartBody(body, boundary) {
+  const normalizedBody = normalizeLineEndings(body);
+  const delimiter = `--${boundary}`;
+
+  return normalizedBody
+    .split(delimiter)
+    .map((part) => part.replace(/^\n+/, '').replace(/\n+$/, ''))
+    .filter((part) => part && part !== '--' && !part.startsWith('--'));
+}
+
+function parseContentType(headerValue = 'text/plain; charset=utf-8') {
+  const [mimePart, ...paramParts] = headerValue.split(';');
+  const params = {};
+
+  for (const part of paramParts) {
+    const equalsIndex = part.indexOf('=');
+    if (equalsIndex === -1) continue;
+
+    const key = part.slice(0, equalsIndex).trim().toLowerCase();
+    const value = part.slice(equalsIndex + 1).trim().replace(/^"|"$/g, '');
+    params[key] = value;
+  }
+
+  return {
+    mime: (mimePart || 'text/plain').trim().toLowerCase(),
+    params,
+  };
+}
+
+function decodeBody(body, encoding, charset) {
+  const cleanedBody = normalizeLineEndings(body).replace(/^\n+|\n+$/g, '');
+
+  if (!cleanedBody) return '';
+
+  if (encoding.includes('quoted-printable')) {
+    return decodeQuotedPrintable(cleanedBody, charset);
+  }
+
+  if (encoding.includes('base64')) {
+    return decodeBase64(cleanedBody, charset);
+  }
+
+  return cleanedBody;
+}
+
+function decodeQuotedPrintable(input, charset = 'utf-8') {
+  const normalized = normalizeLineEndings(input).replace(/=\n/g, '');
+  const bytes = [];
+
+  for (let i = 0; i < normalized.length; i += 1) {
+    const current = normalized[i];
+    const hex = normalized.slice(i + 1, i + 3);
+
+    if (current === '=' && /^[0-9A-Fa-f]{2}$/.test(hex)) {
+      bytes.push(parseInt(hex, 16));
+      i += 2;
+      continue;
+    }
+
+    bytes.push(normalized.charCodeAt(i));
+  }
+
+  return decodeBytes(bytes, charset);
+}
+
+function decodeBase64(input, charset = 'utf-8') {
+  try {
+    const normalized = input.replace(/\s+/g, '');
+    const binary = atob(normalized);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+
+    return decodeBytes(bytes, charset);
+  } catch {
+    return input;
+  }
+}
+
+function decodeHeaderValue(value = '') {
   return value.replace(/=\?([^?]+)\?([BQ])\?([^?]+)\?=/gi, (match, charset, encoding, text) => {
     try {
       if (encoding.toUpperCase() === 'B') {
-        return atob(text);
-      } else if (encoding.toUpperCase() === 'Q') {
-        return text.replace(/=([0-9A-Fa-f]{2})/g, (m, hex) =>
-          String.fromCharCode(parseInt(hex, 16))
-        ).replace(/_/g, ' ');
+        const binary = atob(text);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+
+        return decodeBytes(bytes, charset);
+      }
+
+      if (encoding.toUpperCase() === 'Q') {
+        const qpSource = text.replace(/_/g, ' ');
+        return decodeQuotedPrintable(qpSource, charset);
       }
     } catch {
       return match;
     }
+
     return match;
   });
+}
+
+function decodeBytes(bytes, charset = 'utf-8') {
+  const supportedCharset = normalizeCharset(charset);
+  const uint8Array = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+
+  try {
+    return new TextDecoder(supportedCharset).decode(uint8Array);
+  } catch {
+    try {
+      return new TextDecoder('utf-8').decode(uint8Array);
+    } catch {
+      return Array.from(uint8Array, (byte) => String.fromCharCode(byte)).join('');
+    }
+  }
+}
+
+function normalizeCharset(charset = 'utf-8') {
+  const normalized = charset.toLowerCase().replace(/['"]/g, '').trim();
+
+  if (normalized === 'utf8') return 'utf-8';
+  if (normalized === 'us-ascii') return 'utf-8';
+  if (normalized === 'iso-8859-1') return 'windows-1252';
+
+  return normalized || 'utf-8';
 }
 
 function sanitizeHtml(html) {
@@ -178,6 +334,23 @@ function sanitizeHtml(html) {
     .replace(/<object\b[^>]*>/gi, '')
     .replace(/<\/object>/gi, '')
     .replace(/<embed\b[^>]*>/gi, '');
+}
+
+function htmlToText(html = '') {
+  return html
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, ' ')
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
 }
 
 function generateId() {

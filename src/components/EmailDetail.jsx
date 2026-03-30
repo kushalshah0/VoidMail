@@ -1,4 +1,118 @@
+import { useEffect, useMemo, useRef } from 'react';
+import { useTheme } from '../context/ThemeContext';
+
+const EMAIL_DOCUMENT_STYLES = `
+  :root {
+    color-scheme: light only;
+    supported-color-schemes: light;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100%;
+    width: 100%;
+    background: #ffffff !important;
+    color: #111827;
+  }
+
+  body {
+    -webkit-text-size-adjust: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  table {
+    max-width: 100% !important;
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+  }
+
+  blockquote {
+    max-width: 100%;
+  }
+
+  a {
+    color: #2563eb;
+  }
+`;
+
+function buildEmailSrcDoc(html) {
+  const headInjection = `
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light" />
+    <style>${EMAIL_DOCUMENT_STYLES}</style>
+  `;
+
+  if (/<head[\s>]/i.test(html)) {
+    return html.replace(/<head([^>]*)>/i, `<head$1>${headInjection}`);
+  }
+
+  if (/<html[\s>]/i.test(html)) {
+    return html.replace(/<html([^>]*)>/i, `<html$1><head>${headInjection}</head>`);
+  }
+
+  return `<!DOCTYPE html>
+  <html>
+    <head>${headInjection}</head>
+    <body>${html}</body>
+  </html>`;
+}
+
 export default function EmailDetail({ email, onBack }) {
+  const iframeRef = useRef(null);
+  const { isDark } = useTheme();
+
+  const resizeIframe = () => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!doc) return;
+
+      const height = Math.max(
+        doc.documentElement?.scrollHeight || 0,
+        doc.body?.scrollHeight || 0,
+        400
+      );
+
+      iframe.style.height = `${height + 1}px`;
+    } catch {
+      iframe.style.height = '400px';
+    }
+  };
+
+  useEffect(() => {
+    if (!email?.html) return;
+
+    const frame = iframeRef.current;
+    if (!frame) return;
+
+    const timers = [
+      window.setTimeout(resizeIframe, 0),
+      window.setTimeout(resizeIframe, 150),
+      window.setTimeout(resizeIframe, 500),
+      window.setTimeout(resizeIframe, 1200),
+    ];
+
+    return () => timers.forEach(window.clearTimeout);
+  }, [email?.id, email?.html]);
+
+  const srcDoc = useMemo(() => {
+    if (!email?.html) return '';
+    return buildEmailSrcDoc(email.html);
+  }, [email?.html]);
+
   if (!email) {
     return (
       <div className="flex items-center justify-center h-full text-light-500 dark:text-dark-500">
@@ -52,50 +166,27 @@ export default function EmailDetail({ email, onBack }) {
 
       <div className="flex-1 overflow-auto p-4">
         {email.html ? (
-          <div className="bg-white dark:bg-dark-900 rounded-xl shadow-sm border border-light-200 dark:border-dark-700 overflow-hidden">
+          <div className={`rounded-xl shadow-sm overflow-hidden border ${
+            isDark
+              ? 'bg-dark-950 border-dark-700'
+              : 'bg-white border-light-200'
+          }`}>
+            <div className={`px-4 py-2 text-xs border-b ${
+              isDark
+                ? 'bg-dark-900 text-dark-400 border-dark-800'
+                : 'bg-light-50 text-light-500 border-light-200'
+            }`}>
+              Email HTML is rendered on an isolated light canvas to preserve the sender's original styling.
+            </div>
             <iframe
-              srcDoc={`<!DOCTYPE html>
-<html>
-<head>
-<style>
-  * { box-sizing: border-box; }
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-    padding: 20px;
-    margin: 0;
-    background: #ffffff;
-    color: #1f2937;
-  }
-  img { max-width: 100%; height: auto; border-radius: 4px; }
-  a { color: #2563eb; text-decoration: underline; }
-  blockquote { 
-    border-left: 4px solid #e5e7eb;
-    margin: 16px 0;
-    padding: 8px 16px;
-    color: #4b5563;
-    background: #f9fafb;
-    border-radius: 0 4px 4px 0;
-  }
-  pre { 
-    background: #f3f4f6;
-    padding: 12px;
-    border-radius: 6px;
-    overflow-x: auto;
-    font-size: 13px;
-  }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { padding: 8px; border: 1px solid #e5e7eb; }
-  h1, h2, h3, h4, h5, h6 { margin: 16px 0 8px; font-weight: 600; }
-  p { margin: 12px 0; }
-</style>
-</head>
-<body>${email.html}</body>
-</html>`}
+              key={email.id}
+              ref={iframeRef}
+              srcDoc={srcDoc}
               title="Email content"
-              className="w-full min-h-[400px] border-0"
+              className="w-full border-0 block bg-white"
+              style={{ minHeight: '400px' }}
               sandbox="allow-same-origin"
+              onLoad={resizeIframe}
             />
           </div>
         ) : (
