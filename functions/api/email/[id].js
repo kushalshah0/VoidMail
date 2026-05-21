@@ -18,7 +18,7 @@ export async function onRequestGet(context) {
           0,
           Math.floor((new Date(inbox.expiresAt) - Date.now()) / 1000)
         );
-        if (remaining > 0) {
+        if (remaining >= 0) {
           await KV.put(`email:${emailId}`, JSON.stringify(email), {
             expirationTtl: remaining,
           });
