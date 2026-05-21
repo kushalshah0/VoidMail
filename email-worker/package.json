@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build": "echo 'VoidMail Email Worker'",
     "deploy": "wrangler deploy",
     "dev": "wrangler dev"
   },
