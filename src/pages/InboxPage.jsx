@@ -23,8 +23,9 @@ export default function InboxPage() {
 
   const domain = import.meta.env.VITE_EMAIL_DOMAIN || 'yourdomain.com';
   const emailAddress = `${username}@${domain}`;
-  const recoveryKey = sessionStorage.getItem(`recovery_${username}`);
-  const expiresAt = sessionStorage.getItem(`expires_${username}`);
+  const normalizedUsername = username.toLowerCase();
+  const recoveryKey = sessionStorage.getItem(`recovery_${normalizedUsername}`);
+  const expiresAt = sessionStorage.getItem(`expires_${normalizedUsername}`);
 
   useEffect(() => {
     const loadInbox = async () => {
@@ -73,9 +74,9 @@ export default function InboxPage() {
     if (!confirm('Delete this inbox and all emails permanently?')) return;
     try {
       await deleteInbox(username, recoveryKey);
-      sessionStorage.removeItem(`recovery_${username}`);
-      sessionStorage.removeItem(`created_${username}`);
-      sessionStorage.removeItem(`expires_${username}`);
+      sessionStorage.removeItem(`recovery_${normalizedUsername}`);
+      sessionStorage.removeItem(`created_${normalizedUsername}`);
+      sessionStorage.removeItem(`expires_${normalizedUsername}`);
       navigate('/');
     } catch (err) {
       setNotification({ type: 'error', message: 'Failed to delete inbox' });
