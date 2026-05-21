@@ -17,10 +17,14 @@ export default {
       const emailContent = parseEmail(rawEmail, message);
       const emailId = generateId();
 
-      const remainingTtl = Math.max(
-        60,
-        Math.floor((new Date(inboxData.expiresAt) - Date.now()) / 1000)
+      const remainingTtl = Math.floor(
+        (new Date(inboxData.expiresAt) - Date.now()) / 1000
       );
+
+      if (remainingTtl <= 0) {
+        message.setReject('Inbox expired');
+        return;
+      }
 
       const snippetSource = emailContent.text || htmlToText(emailContent.html);
 
