@@ -51,8 +51,12 @@ export default function InboxPage() {
     }
   }, [username]);
 
-  useEmailSubscription(username, (newEmails) => {
-    setEmails(newEmails);
+  const { mode } = useEmailSubscription(username, (newEmails) => {
+    if (newEmails) {
+      setEmails(newEmails);
+    } else {
+      fetchEmails();
+    }
     setLastUpdated(new Date());
   });
 
@@ -217,6 +221,7 @@ export default function InboxPage() {
               emails={emails}
               selectedId={selectedId}
               onSelect={handleSelectEmail}
+              mode={mode}
             />
           </div>
         </div>
