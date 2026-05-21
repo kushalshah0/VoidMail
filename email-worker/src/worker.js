@@ -401,7 +401,7 @@ export class SseBroadcaster {
   async fetch(request) {
     const url = new URL(request.url);
 
-    if (url.pathname === '/sse') {
+    if (url.pathname === '/sse' || url.pathname === '/api/sse') {
       const { readable, writable } = new TransformStream();
       const writer = writable.getWriter();
       const clientId = crypto.randomUUID();
