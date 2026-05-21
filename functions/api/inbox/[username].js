@@ -32,7 +32,7 @@ export async function onRequestDelete(context) {
       return jsonResponse({ error: 'Inbox not found or expired' }, 404);
     }
 
-    if (body.recoveryKey && body.recoveryKey !== inboxData.recoveryKey) {
+    if (body.recoveryKey && body.recoveryKey.toUpperCase() !== inboxData.recoveryKey) {
       return jsonResponse({ error: 'Invalid recovery key' }, 403);
     }
 
