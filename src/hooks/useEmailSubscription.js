@@ -14,14 +14,14 @@ export default function useEmailSubscription(username, onNewEmails) {
     const eventSource = new EventSource(`/api/sse?username=${username}`);
     eventSourceRef.current = eventSource;
 
-    eventSource.onmessage = (event) => {
+    eventSource.addEventListener('new-email', (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'new_email') {
+        if (data.emails) {
           onNewEmails(data.emails);
         }
       } catch {}
-    };
+    });
 
     eventSource.onerror = () => {
       eventSource.close();

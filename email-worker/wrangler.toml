@@ -9,3 +9,7 @@ id = "9502f2810b254def9880682b913d6c0d"
 [[durable_objects.bindings]]
 name = "SSE_BROADCASTER"
 class_name = "SseBroadcaster"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["SseBroadcaster"]

@@ -375,7 +375,71 @@ function generateId() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export { SseBroadcaster };
+export class SseBroadcaster {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+    this.clients = new Map();
+  }
+
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/sse') {
+      const { readable, writable } = new TransformStream();
+      const writer = writable.getWriter();
+      const clientId = crypto.randomUUID();
+
+      this.clients.set(clientId, writer);
+
+      const encoder = new TextEncoder();
+
+      const cleanup = () => {
+        this.clients.delete(clientId);
+        try { writer.close(); } catch {}
+      };
+
+      const headers = {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      };
+
+      const response = new Response(readable, { headers });
+
+      this.state.waitUntil(
+        new Promise((resolve) => {
+          request.signal.addEventListener('abort', () => {
+            cleanup();
+            resolve();
+          });
+        })
+      );
+
+      writer.write(encoder.encode(`event: connected\ndata: ${JSON.stringify({ clientId })}\n\n`));
+
+      return response;
+    }
+
+    return new Response('Not Found', { status: 404 });
+  }
+
+  async broadcast(username, data) {
+    const encoder = new TextEncoder();
+    const message = `event: new-email\ndata: ${JSON.stringify(data)}\n\n`;
+    const encoded = encoder.encode(message);
+
+    const promises = [];
+    for (const [clientId, writer] of this.clients) {
+      try {
+        promises.push(writer.write(encoded));
+      } catch {
+        this.clients.delete(clientId);
+      }
+    }
+    await Promise.allSettled(promises);
+  }
+}
 
 export default {
   email(message, env) {
@@ -383,7 +447,7 @@ export default {
   },
   async fetch(request, env) {
     const url = new URL(request.url);
-    
+
     if (url.pathname === '/sse' || url.searchParams.has('username')) {
       const username = url.searchParams.get('username');
       if (!username) {
