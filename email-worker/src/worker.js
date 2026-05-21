@@ -76,6 +76,22 @@ export default {
       console.error('Email worker error:', err);
     }
   },
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/sse' || url.searchParams.has('username')) {
+      const username = url.searchParams.get('username');
+      if (!username) {
+        return new Response('Missing username', { status: 400 });
+      }
+
+      const doId = env.SSE_BROADCASTER.idFromName(username);
+      const doStub = env.SSE_BROADCASTER.get(doId);
+      return doStub.fetch(request);
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
 };
 
 function parseEmail(rawEmail, message) {
@@ -440,25 +456,3 @@ export class SseBroadcaster {
     await Promise.allSettled(promises);
   }
 }
-
-export default {
-  email(message, env) {
-    return module.exports.default.email(message, env);
-  },
-  async fetch(request, env) {
-    const url = new URL(request.url);
-
-    if (url.pathname === '/sse' || url.searchParams.has('username')) {
-      const username = url.searchParams.get('username');
-      if (!username) {
-        return new Response('Missing username', { status: 400 });
-      }
-
-      const doId = env.SSE_BROADCASTER.idFromName(username);
-      const doStub = env.SSE_BROADCASTER.get(doId);
-      return doStub.fetch(request);
-    }
-
-    return new Response('Not Found', { status: 404 });
-  },
-};
