@@ -65,7 +65,11 @@ export default {
         try {
           const doId = BROADCASTER.idFromName(username);
           const doStub = BROADCASTER.get(doId);
-          await doStub.broadcast(username, { emails: emailList });
+          await doStub.fetch(new Request('http://internal/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emails: emailList }),
+          }));
         } catch (e) {
           console.error('Broadcast error:', e);
         }
@@ -437,22 +441,24 @@ export class SseBroadcaster {
       return response;
     }
 
-    return new Response('Not Found', { status: 404 });
-  }
+    if (url.pathname === '/broadcast' && request.method === 'POST') {
+      const data = await request.json();
+      const encoder = new TextEncoder();
+      const message = `event: new-email\ndata: ${JSON.stringify(data)}\n\n`;
+      const encoded = encoder.encode(message);
 
-  async broadcast(username, data) {
-    const encoder = new TextEncoder();
-    const message = `event: new-email\ndata: ${JSON.stringify(data)}\n\n`;
-    const encoded = encoder.encode(message);
-
-    const promises = [];
-    for (const [clientId, writer] of this.clients) {
-      try {
-        promises.push(writer.write(encoded));
-      } catch {
-        this.clients.delete(clientId);
+      const promises = [];
+      for (const [clientId, writer] of this.clients) {
+        try {
+          promises.push(writer.write(encoded));
+        } catch {
+          this.clients.delete(clientId);
+        }
       }
+      await Promise.allSettled(promises);
+      return new Response('OK');
     }
-    await Promise.allSettled(promises);
+
+    return new Response('Not Found', { status: 404 });
   }
 }
