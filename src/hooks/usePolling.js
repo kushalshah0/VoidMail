@@ -8,8 +8,8 @@ export default function usePolling(callback, interval = 5000) {
   }, [callback]);
 
   useEffect(() => {
-    const tick = () => savedCallback.current();
-    const id = setInterval(tick, interval);
+    savedCallback.current();
+    const id = setInterval(() => savedCallback.current(), interval);
     return () => clearInterval(id);
   }, [interval]);
 }
