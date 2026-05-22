@@ -65,70 +65,94 @@ export default function HomePage() {
     },
   ];
 
+  const steps = [
+    { step: '01', title: 'Pick a Username', desc: 'Choose any username or let us generate one randomly.' },
+    { step: '02', title: 'Receive Emails', desc: 'Use your temp address anywhere. Emails appear instantly.' },
+    { step: '03', title: 'Auto-Destruct', desc: 'Everything is permanently deleted when the timer expires.' },
+  ];
+
   return (
     <div className="animate-fade-in">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b 
                         from-brand-50 dark:from-brand-600/5 
                         via-transparent to-transparent" />
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] 
+        <div className="absolute top-20 left-1/4 -translate-x-1/2 w-[800px] h-[600px] 
                         bg-brand-100/50 dark:bg-brand-600/5 
                         rounded-full blur-3xl" />
 
-        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 badge-blue mb-6">
-              <span className="w-1.5 h-1.5 bg-brand-500 dark:bg-brand-400 rounded-full animate-pulse" />
-              Zero Tracking • Auto-Delete
-            </div>
-
-            <h1 className="text-4xl md:text-6xl font-bold text-light-900 dark:text-white mb-6 leading-tight">
-              Disposable Email.{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r 
-                               from-brand-500 to-brand-700 
-                               dark:from-brand-400 dark:to-brand-600">
-                Instant & Private.
-              </span>
-            </h1>
-
-            <p className="text-lg text-light-600 dark:text-dark-400 leading-relaxed">
-              Generate a temporary inbox instantly. Protect your real email from
-              spam, bots, and unwanted signups. Powered by Cloudflare's edge network.
-            </p>
-          </div>
-
-          <div className="max-w-md mx-auto">
-            <div className="card glow">
-              <div className="flex mb-6 bg-light-100 dark:bg-dark-800 rounded-xl p-1">
-                <button
-                  onClick={() => setTab('generate')}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${tab === 'generate'
-                      ? 'bg-brand-600 text-white shadow-lg'
-                      : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
-                    }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  New Inbox
-                </button>
-                <button
-                  onClick={() => setTab('recover')}
-                  className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
-                    ${tab === 'recover'
-                      ? 'bg-brand-600 text-white shadow-lg'
-                      : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
-                    }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                  </svg>
-                  Recovery Login
-                </button>
+        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 lg:pt-24 lg:pb-20">
+          <div className="lg:grid lg:grid-cols-5 lg:gap-12 items-center">
+            <div className="lg:col-span-3 mb-10 lg:mb-0 max-w-xl">
+              <div className="inline-flex items-center gap-2 badge-blue mb-5">
+                <span className="w-1.5 h-1.5 bg-brand-500 dark:bg-brand-400 rounded-full animate-pulse" />
+                Zero Tracking &bull; Auto-Delete
               </div>
 
-              {tab === 'generate' ? <GenerateForm /> : <RecoveryForm />}
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-light-900 dark:text-white mb-5 leading-tight">
+                Disposable Email.{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r 
+                                 from-brand-500 to-brand-700 
+                                 dark:from-brand-400 dark:to-brand-600">
+                  Instant & Private.
+                </span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-light-600 dark:text-dark-400 leading-relaxed mb-8">
+                Generate a temporary inbox instantly. Protect your real email from
+                spam, bots, and unwanted signups. Powered by Cloudflare's edge network.
+              </p>
+
+              <div className="hidden lg:flex items-center gap-6">
+                {steps.map((item) => (
+                  <div key={item.step} className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-600/10 
+                                    border border-brand-200 dark:border-brand-600/20 
+                                    flex items-center justify-center shrink-0">
+                      <span className="text-sm font-bold text-brand-600 dark:text-brand-400">{item.step}</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-light-900 dark:text-white">{item.title}</p>
+                      <p className="text-xs text-light-500 dark:text-dark-500">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:col-span-2">
+              <div className="card glow">
+                <div className="flex mb-6 bg-light-100 dark:bg-dark-800 rounded-xl p-1">
+                  <button
+                    onClick={() => setTab('generate')}
+                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
+                      ${tab === 'generate'
+                        ? 'bg-brand-600 text-white shadow-lg'
+                        : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
+                      }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    New Inbox
+                  </button>
+                  <button
+                    onClick={() => setTab('recover')}
+                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
+                      ${tab === 'recover'
+                        ? 'bg-brand-600 text-white shadow-lg'
+                        : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
+                      }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    Recovery Login
+                  </button>
+                </div>
+
+                {tab === 'generate' ? <GenerateForm /> : <RecoveryForm />}
+              </div>
             </div>
           </div>
         </div>
@@ -151,24 +175,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-4 py-16">
+      <section className="max-w-4xl mx-auto px-4 py-16 lg:hidden">
         <h2 className="text-2xl font-bold text-light-900 dark:text-white text-center mb-12">
           How It Works
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {[
-            { step: '01', title: 'Pick a Username', desc: 'Choose any username or let us generate one randomly.' },
-            { step: '02', title: 'Receive Emails', desc: 'Use your temp address anywhere. Emails appear instantly.' },
-            { step: '03', title: 'Auto-Destruct', desc: 'Everything is permanently deleted when the timer expires.' },
-          ].map((item) => (
+          {steps.map((item) => (
             <div key={item.step} className="text-center">
-              <div className="text-4xl font-bold text-brand-600 dark:text-brand-400 mb-3">
-                {item.step}
+              <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-600/10 
+                              border border-brand-200 dark:border-brand-600/20 
+                              flex items-center justify-center mx-auto mb-4">
+                <span className="text-xl font-bold text-brand-600 dark:text-brand-400">{item.step}</span>
               </div>
-              <h3 className="text-lg font-semibold text-light-900 dark:text-white mb-2">
-                {item.title}
-              </h3>
+              <h3 className="text-lg font-semibold text-light-900 dark:text-white mb-2">{item.title}</h3>
               <p className="text-light-600 dark:text-dark-400 text-sm">{item.desc}</p>
             </div>
           ))}
