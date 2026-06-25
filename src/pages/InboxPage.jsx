@@ -51,13 +51,19 @@ export default function InboxPage() {
     }
   }, [username]);
 
-  const { mode } = useEmailSubscription(username, (newEmails) => {
-    if (newEmails) {
-      setEmails(newEmails);
-    } else {
-      fetchEmails();
-    }
-    setLastUpdated(new Date());
+  const { mode } = useEmailSubscription(username, {
+    onNewEmail: (email) => {
+      setEmails((prev) => [email, ...prev]);
+      setLastUpdated(new Date());
+    },
+    onNewEmails: (newEmails) => {
+      if (newEmails) {
+        setEmails(newEmails);
+      } else {
+        fetchEmails();
+      }
+      setLastUpdated(new Date());
+    },
   });
 
   useEffect(() => {
