@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-export default function useEmailSubscription(username, onNewEmails) {
+export default function useEmailSubscription(username, { onNewEmail, onNewEmails }) {
   const [mode, setMode] = useState('connecting');
   const eventSourceRef = useRef(null);
   const pollingRef = useRef(null);
@@ -46,7 +46,9 @@ export default function useEmailSubscription(username, onNewEmails) {
     eventSource.addEventListener('new-email', (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.emails) {
+        if (data.email) {
+          onNewEmail(data.email);
+        } else if (data.emails) {
           onNewEmails(data.emails);
         }
       } catch {}
@@ -65,7 +67,7 @@ export default function useEmailSubscription(username, onNewEmails) {
 
       reconnectTimeoutRef.current = setTimeout(connectSSE, 3000);
     };
-  }, [username, onNewEmails, startPolling, stopPolling]);
+  }, [username, onNewEmail, onNewEmails, startPolling, stopPolling]);
 
   useEffect(() => {
     connectSSE();
