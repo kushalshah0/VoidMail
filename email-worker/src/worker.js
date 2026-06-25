@@ -28,6 +28,15 @@ export default {
 
       const snippetSource = emailContent.text || htmlToText(emailContent.html);
 
+      const emailSummary = {
+        id: emailId,
+        from: message.from,
+        subject: emailContent.subject,
+        snippet: snippetSource.substring(0, 100),
+        receivedAt: new Date().toISOString(),
+        read: false,
+      };
+
       const fullEmail = {
         id: emailId,
         inbox: username,
@@ -38,28 +47,22 @@ export default {
         html: emailContent.html,
         snippet: snippetSource.substring(0, 150),
         headers: emailContent.headers,
-        receivedAt: new Date().toISOString(),
+        receivedAt: emailSummary.receivedAt,
         read: false,
         size: rawEmail.length,
       };
 
-      await KV.put(`email:${emailId}`, JSON.stringify(fullEmail), {
-        expirationTtl: remainingTtl,
-      });
-
       const emailList = await KV.get(`emails:${username}`, 'json') || [];
-      emailList.push({
-        id: emailId,
-        from: message.from,
-        subject: emailContent.subject,
-        snippet: snippetSource.substring(0, 100),
-        receivedAt: fullEmail.receivedAt,
-        read: false,
-      });
+      emailList.push(emailSummary);
 
-      await KV.put(`emails:${username}`, JSON.stringify(emailList), {
-        expirationTtl: remainingTtl,
-      });
+      await Promise.all([
+        KV.put(`email:${emailId}`, JSON.stringify(fullEmail), {
+          expirationTtl: remainingTtl,
+        }),
+        KV.put(`emails:${username}`, JSON.stringify(emailList), {
+          expirationTtl: remainingTtl,
+        }),
+      ]);
 
       if (BROADCASTER) {
         try {
@@ -68,7 +71,7 @@ export default {
           await doStub.fetch(new Request('http://internal/broadcast', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ emails: emailList }),
+            body: JSON.stringify({ email: emailSummary }),
           }));
         } catch (e) {
           console.error('Broadcast error:', e);
@@ -419,6 +422,37 @@ export class SseBroadcaster {
         try { writer.close(); } catch {}
       };
 
+      const keepAliveInterval = setInterval(() => {
+        this.state.waitUntil((async () => {
+          try {
+            await writer.write(encoder.encode(': ping\n\n'));
+          } catch {
+            clearInterval(keepAliveInterval);
+          }
+        })());
+      }, 15000);
+
+      const abortHandler = () => {
+        clearInterval(keepAliveInterval);
+        cleanup();
+      };
+
+      if (request.signal) {
+        request.signal.addEventListener('abort', abortHandler);
+      }
+
+      this.state.waitUntil(
+        new Promise((resolve) => {
+          if (request.signal) {
+            request.signal.addEventListener('abort', () => {
+              clearInterval(keepAliveInterval);
+              cleanup();
+              resolve();
+            });
+          }
+        })
+      );
+
       const headers = {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -426,15 +460,6 @@ export class SseBroadcaster {
       };
 
       const response = new Response(readable, { headers });
-
-      this.state.waitUntil(
-        new Promise((resolve) => {
-          request.signal.addEventListener('abort', () => {
-            cleanup();
-            resolve();
-          });
-        })
-      );
 
       writer.write(encoder.encode(`event: connected\ndata: ${JSON.stringify({ clientId })}\n\n`));
 
