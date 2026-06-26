@@ -1,27 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useTheme } from '../context/ThemeContext';
 
 const EMAIL_DOCUMENT_STYLES = `
-  :root {
-    color-scheme: light only;
-    supported-color-schemes: light;
-  }
-
-  html,
-  body {
-    margin: 0 !important;
-    padding: 0 !important;
-    min-height: 100%;
-    width: 100%;
-    background: #ffffff !important;
-    color: #111827;
-  }
-
-  body {
-    -webkit-text-size-adjust: 100%;
-    overflow-wrap: anywhere;
-  }
-
   img {
     max-width: 100% !important;
     height: auto !important;
@@ -39,17 +18,11 @@ const EMAIL_DOCUMENT_STYLES = `
   blockquote {
     max-width: 100%;
   }
-
-  a {
-    color: #2563eb;
-  }
 `;
 
 function buildEmailSrcDoc(html) {
   const headInjection = `
     <meta charset="utf-8" />
-    <meta name="color-scheme" content="light only" />
-    <meta name="supported-color-schemes" content="light" />
     <base target="_blank" />
     <style>${EMAIL_DOCUMENT_STYLES}</style>
   `;
@@ -71,7 +44,6 @@ function buildEmailSrcDoc(html) {
 
 export default function EmailDetail({ email, onBack }) {
   const iframeRef = useRef(null);
-  const { isDark } = useTheme();
 
   const resizeIframe = () => {
     const iframe = iframeRef.current;
@@ -143,22 +115,22 @@ export default function EmailDetail({ email, onBack }) {
           ← Back
         </button>
 
-        <h2 className="text-lg font-semibold text-light-900 dark:text-white mb-3">
+        <h2 className="text-lg font-semibold text-light-900 dark:text-white mb-4 leading-snug">
           {email.subject || '(No Subject)'}
         </h2>
 
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <div>
-            <span className="text-light-500 dark:text-dark-500">From: </span>
-            <span className="text-light-800 dark:text-dark-200">{email.from_addr}</span>
+        <div className="space-y-2 text-sm">
+          <div className="flex items-start gap-2">
+            <span className="text-light-400 dark:text-dark-500 w-10 shrink-0 pt-0.5">From</span>
+            <span className="text-light-800 dark:text-dark-200 break-all">{email.from_addr}</span>
           </div>
-          <div>
-            <span className="text-light-500 dark:text-dark-500">To: </span>
-            <span className="text-light-800 dark:text-dark-200">{email.to_addr}</span>
+          <div className="flex items-start gap-2">
+            <span className="text-light-400 dark:text-dark-500 w-10 shrink-0 pt-0.5">To</span>
+            <span className="text-light-800 dark:text-dark-200 break-all">{email.to_addr}</span>
           </div>
-          <div>
-            <span className="text-light-500 dark:text-dark-500">Date: </span>
-            <span className="text-light-800 dark:text-dark-200">
+          <div className="flex items-start gap-2">
+            <span className="text-light-400 dark:text-dark-500 w-10 shrink-0 pt-0.5">Date</span>
+            <span className="text-light-500 dark:text-dark-400">
               {date.toLocaleDateString()} {date.toLocaleTimeString()}
             </span>
           </div>
@@ -167,28 +139,23 @@ export default function EmailDetail({ email, onBack }) {
 
       <div className="flex-1 overflow-auto p-4">
         {email.html ? (
-          <div className={`rounded-xl shadow-sm overflow-hidden border ${
-            isDark
-              ? 'bg-dark-950 border-dark-700'
-              : 'bg-white border-light-200'
-          }`}>
-            
-            <iframe
-              key={email.id}
-              ref={iframeRef}
-              srcDoc={srcDoc}
-              title="Email content"
-              className="w-full border-0 block bg-white"
-              style={{ minHeight: '400px' }}
-              sandbox="allow-same-origin allow-popups"
-              onLoad={resizeIframe}
-            />
-          </div>
+          <iframe
+            key={email.id}
+            ref={iframeRef}
+            srcDoc={srcDoc}
+            title="Email content"
+            className="w-full border-0 block rounded-lg"
+            style={{ minHeight: '400px' }}
+            sandbox="allow-same-origin allow-popups"
+            onLoad={resizeIframe}
+          />
         ) : (
           <div className="bg-white dark:bg-dark-900 rounded-xl p-5 shadow-sm border border-light-200 dark:border-dark-700">
-            <pre className="whitespace-pre-wrap text-light-700 dark:text-dark-300 text-sm font-sans leading-relaxed m-0">
-              {email.text || 'No content'}
-            </pre>
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <pre className="whitespace-pre-wrap text-light-700 dark:text-dark-300 text-sm font-sans leading-relaxed m-0">
+                {email.text || 'No content'}
+              </pre>
+            </div>
           </div>
         )}
       </div>
