@@ -1,3 +1,8 @@
 name = "voidmail"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-03-27"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "voidmail"
+database_id = "b86c9afb-a223-420e-8d0e-90142356d4d0"
