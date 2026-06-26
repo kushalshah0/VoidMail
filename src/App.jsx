@@ -1,8 +1,30 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import InboxPage from './pages/InboxPage';
+
+function AutoRedirect() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const email = localStorage.getItem('voidmail_email');
+    const expiresAt = localStorage.getItem('voidmail_expires');
+
+    if (email && expiresAt) {
+      const expTime = parseInt(expiresAt);
+      if (expTime > Date.now()) {
+        navigate(`/inbox/${email}`, { replace: true });
+      } else {
+        localStorage.removeItem('voidmail_email');
+        localStorage.removeItem('voidmail_expires');
+      }
+    }
+  }, [navigate]);
+
+  return <HomePage />;
+}
 
 export default function App() {
   return (
@@ -13,8 +35,8 @@ export default function App() {
       <Header />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/inbox/:username" element={<InboxPage />} />
+          <Route path="/" element={<AutoRedirect />} />
+          <Route path="/inbox/:address" element={<InboxPage />} />
         </Routes>
       </main>
       <Footer />
