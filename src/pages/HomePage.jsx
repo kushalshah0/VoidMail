@@ -97,7 +97,7 @@ export default function HomePage() {
                         bg-brand-100/50 dark:bg-brand-600/5 
                         rounded-full blur-3xl" />
 
-        <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 lg:pt-24 lg:pb-20">
+        <div className="relative max-w-6xl mx-auto px-4 pt-6 pb-8 lg:pt-8 lg:pb-12">
           <div className="lg:grid lg:grid-cols-5 lg:gap-12 items-center">
             <div className="lg:col-span-3 mb-10 lg:mb-0 max-w-xl">
               <div className="inline-flex items-center gap-2 badge-blue mb-5">
@@ -185,7 +185,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 py-16">
+      <section className="max-w-6xl mx-auto px-4 py-6 lg:py-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl font-bold text-light-900 dark:text-white mb-3">
             Why VoidMail?
