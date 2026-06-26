@@ -22,6 +22,10 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Migration docs (completed)
+MIGRATION_STATUS.md
+MIGRATION_TODO.md
+
 # Logs
 *.log
 npm-debug.log*
