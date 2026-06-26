@@ -33,10 +33,9 @@ async function request(path, options = {}) {
 }
 
 export function generateAddress(username) {
-  const body = username ? JSON.stringify({ username }) : undefined;
   return request('/api/generate', {
     method: 'POST',
-    body,
+    body: JSON.stringify({ username: username || undefined }),
   });
 }
 
