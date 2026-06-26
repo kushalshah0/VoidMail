@@ -1,5 +1,5 @@
 import PostalMime from "postal-mime";
-import { saveMessage, getMessages, getMessagesSince, cleanupExpired } from "./db";
+import { saveMessage, getMessages, getMessagesSince, cleanupExpired, createInbox, getInboxByRecovery, deleteInbox, deleteMessages } from "./db";
 import { renderUI } from "./ui";
 
 export interface Env {
@@ -9,10 +9,17 @@ export interface Env {
 
 const MESSAGE_TTL = 3600;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+};
+
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
 }
 
@@ -23,6 +30,19 @@ function generateLocalPart(): string {
     result += chars[Math.floor(Math.random() * chars.length)];
   }
   return result;
+}
+
+function generateRecoveryKey(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const segments: string[] = [];
+  for (let i = 0; i < 4; i++) {
+    let segment = "";
+    for (let j = 0; j < 4; j++) {
+      segment += chars[Math.floor(Math.random() * chars.length)];
+    }
+    segments.push(segment);
+  }
+  return segments.join("-");
 }
 
 export default {
@@ -47,6 +67,10 @@ export default {
   },
 
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
     const url = new URL(request.url);
     const path = url.pathname;
 
@@ -56,16 +80,48 @@ export default {
       });
     }
 
-    if (path === "/api/generate") {
+    if (path === "/api/generate" && request.method === "POST") {
       const address = `${generateLocalPart()}@${env.DOMAIN}`;
-      return json({ address });
+      const recoveryKey = generateRecoveryKey();
+      const inbox = await createInbox(env.DB, address, recoveryKey);
+      return json({
+        address,
+        recoveryKey,
+        createdAt: new Date(inbox.created_at * 1000).toISOString(),
+        expiresAt: new Date(inbox.expires_at * 1000).toISOString(),
+      });
+    }
+
+    if (path === "/api/recover" && request.method === "POST") {
+      const body = await request.json() as { recoveryKey?: string };
+      const key = (body.recoveryKey || "").toUpperCase().trim();
+      if (!key) {
+        return json({ error: "Recovery key is required" }, 400);
+      }
+      const inbox = await getInboxByRecovery(env.DB, key);
+      if (!inbox) {
+        return json({ error: "Invalid or expired recovery key" }, 404);
+      }
+      return json({ address: inbox.address, expiresAt: new Date(inbox.expires_at * 1000).toISOString() });
     }
 
     const inboxMatch = path.match(/^\/api\/inbox\/(.+)$/);
     if (inboxMatch) {
       const addr = decodeURIComponent(inboxMatch[1]).toLowerCase();
-      const since = parseInt(url.searchParams.get("since") ?? "0", 10);
 
+      if (request.method === "DELETE") {
+        const body = await request.json() as { recoveryKey?: string };
+        const key = (body.recoveryKey || "").toUpperCase().trim();
+        const inbox = await getInboxByRecovery(env.DB, key);
+        if (!inbox || inbox.address !== addr) {
+          return json({ error: "Invalid recovery key" }, 403);
+        }
+        await deleteMessages(env.DB, addr);
+        await deleteInbox(env.DB, addr);
+        return json({ success: true });
+      }
+
+      const since = parseInt(url.searchParams.get("since") ?? "0", 10);
       const messages =
         since > 0 ? await getMessagesSince(env.DB, addr, since) : await getMessages(env.DB, addr);
 
