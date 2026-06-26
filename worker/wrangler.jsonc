@@ -4,10 +4,6 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-06-01",
 
-  "vars": {
-    "DOMAIN": "kushal.qzz.io"
-  },
-
   "d1_databases": [
     {
       "binding": "DB",
