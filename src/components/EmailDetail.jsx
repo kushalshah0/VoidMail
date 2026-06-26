@@ -50,6 +50,7 @@ function buildEmailSrcDoc(html) {
     <meta charset="utf-8" />
     <meta name="color-scheme" content="light only" />
     <meta name="supported-color-schemes" content="light" />
+    <base target="_blank" />
     <style>${EMAIL_DOCUMENT_STYLES}</style>
   `;
 
@@ -118,7 +119,7 @@ export default function EmailDetail({ email, onBack }) {
       <div className="flex items-center justify-center h-full text-light-500 dark:text-dark-500">
         <div className="text-center">
           <div className="w-14 h-14 mb-3 rounded-full bg-light-100 dark:bg-dark-800 flex items-center justify-center mx-auto">
-            <svg className="w-7 h-7 text-light-500 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-7 h-7 text-light-500 dark:text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
@@ -128,7 +129,7 @@ export default function EmailDetail({ email, onBack }) {
     );
   }
 
-  const date = new Date(email.receivedAt);
+  const date = new Date(email.received_at * 1000);
 
   return (
     <div className="flex flex-col h-full">
@@ -149,11 +150,11 @@ export default function EmailDetail({ email, onBack }) {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
           <div>
             <span className="text-light-500 dark:text-dark-500">From: </span>
-            <span className="text-light-800 dark:text-dark-200">{email.from}</span>
+            <span className="text-light-800 dark:text-dark-200">{email.from_addr}</span>
           </div>
           <div>
             <span className="text-light-500 dark:text-dark-500">To: </span>
-            <span className="text-light-800 dark:text-dark-200">{email.to}</span>
+            <span className="text-light-800 dark:text-dark-200">{email.to_addr}</span>
           </div>
           <div>
             <span className="text-light-500 dark:text-dark-500">Date: </span>
@@ -179,7 +180,7 @@ export default function EmailDetail({ email, onBack }) {
               title="Email content"
               className="w-full border-0 block bg-white"
               style={{ minHeight: '400px' }}
-              sandbox="allow-same-origin"
+              sandbox="allow-same-origin allow-popups"
               onLoad={resizeIframe}
             />
           </div>
