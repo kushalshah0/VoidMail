@@ -1,11 +1,7 @@
-import { useState } from 'react';
 import GenerateForm from '../components/GenerateForm';
-import RecoveryForm from '../components/RecoveryForm';
 import FeatureCard from '../components/FeatureCard';
 
 export default function HomePage() {
-  const [tab, setTab] = useState('generate');
-
   const features = [
     {
       icon: (
@@ -20,20 +16,11 @@ export default function HomePage() {
     {
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-        </svg>
-      ),
-      title: 'Recovery Key',
-      description: 'Get a unique key to re-access your inbox from any device.',
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
       title: 'Auto-Expires',
-      description: 'Inboxes self-destruct after your chosen time. 1h, 6h, 12h, or 24h.',
+      description: 'Inboxes self-destruct after 1 hour. No cleanup needed.',
     },
     {
       icon: (
@@ -66,9 +53,9 @@ export default function HomePage() {
   ];
 
   const steps = [
-    { step: '01', title: 'Pick a Username', desc: 'Choose any username or let us generate one randomly.' },
-    { step: '02', title: 'Receive Emails', desc: 'Use your temp address anywhere. Emails appear instantly.' },
-    { step: '03', title: 'Auto-Destruct', desc: 'Everything is permanently deleted when the timer expires.' },
+    { step: '01', title: 'Generate Address', desc: 'Click the button. Get a random temp address instantly.' },
+    { step: '02', title: 'Receive Emails', desc: 'Share your address anywhere. Emails appear in seconds.' },
+    { step: '03', title: 'Auto-Expires', desc: 'Everything is deleted after 1 hour. No traces left.' },
   ];
 
   return (
@@ -122,36 +109,7 @@ export default function HomePage() {
 
             <div className="lg:col-span-2">
               <div className="card glow">
-                <div className="flex mb-6 bg-light-100 dark:bg-dark-800 rounded-xl p-1">
-                  <button
-                    onClick={() => setTab('generate')}
-                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
-                      ${tab === 'generate'
-                        ? 'bg-brand-600 text-white shadow-lg'
-                        : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
-                      }`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    New Inbox
-                  </button>
-                  <button
-                    onClick={() => setTab('recover')}
-                    className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2
-                      ${tab === 'recover'
-                        ? 'bg-brand-600 text-white shadow-lg'
-                        : 'text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-dark-200'
-                      }`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                    </svg>
-                    Recovery Login
-                  </button>
-                </div>
-
-                {tab === 'generate' ? <GenerateForm /> : <RecoveryForm />}
+                <GenerateForm />
               </div>
             </div>
           </div>
