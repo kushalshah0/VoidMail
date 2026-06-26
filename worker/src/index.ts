@@ -1,5 +1,5 @@
 import PostalMime from "postal-mime";
-import { saveMessage, getMessages, getMessagesSince, cleanupExpired, createInbox, getInboxByRecovery, deleteInbox, deleteMessages } from "./db";
+import { saveMessage, getMessages, getMessagesSince, cleanupExpired, createInbox, getInboxByRecovery, getInboxByAddress, deleteInbox, deleteMessages } from "./db";
 import { renderUI } from "./ui";
 
 export interface Env {
@@ -81,7 +81,27 @@ export default {
     }
 
     if (path === "/api/generate" && request.method === "POST") {
-      const address = `${generateLocalPart()}@${env.DOMAIN}`;
+      let address: string;
+      const body = await request.json() as { username?: string };
+
+      if (body.username) {
+        const username = body.username.toLowerCase().trim();
+        if (!/^[a-z0-9][a-z0-9._-]{2,29}$/.test(username)) {
+          return json({ error: "Username must be 3-30 characters: letters, numbers, dots, hyphens, underscores" }, 400);
+        }
+        const reserved = ["admin", "postmaster", "abuse", "webmaster", "noreply", "support", "info", "mail", "contact"];
+        if (reserved.includes(username)) {
+          return json({ error: "This username is reserved" }, 400);
+        }
+        address = `${username}@${env.DOMAIN}`;
+        const existing = await getInboxByAddress(env.DB, address);
+        if (existing) {
+          return json({ error: "This username is already taken. Try a different one." }, 409);
+        }
+      } else {
+        address = `${generateLocalPart()}@${env.DOMAIN}`;
+      }
+
       const recoveryKey = generateRecoveryKey();
       const inbox = await createInbox(env.DB, address, recoveryKey);
       return json({

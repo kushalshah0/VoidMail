@@ -32,8 +32,12 @@ async function request(path, options = {}) {
   }
 }
 
-export function generateAddress() {
-  return request('/api/generate', { method: 'POST' });
+export function generateAddress(username) {
+  const body = username ? JSON.stringify({ username }) : undefined;
+  return request('/api/generate', {
+    method: 'POST',
+    body,
+  });
 }
 
 export function recoverInbox(recoveryKey) {

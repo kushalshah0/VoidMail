@@ -91,6 +91,15 @@ export async function getInboxByRecovery(db: D1Database, recoveryKey: string): P
   return result.results[0] ?? null;
 }
 
+export async function getInboxByAddress(db: D1Database, address: string): Promise<InboxRow | null> {
+  const now = Math.floor(Date.now() / 1000);
+  const result = await db
+    .prepare(`SELECT * FROM inboxes WHERE address = ? AND expires_at > ? LIMIT 1`)
+    .bind(address, now)
+    .all<InboxRow>();
+  return result.results[0] ?? null;
+}
+
 export async function deleteInbox(db: D1Database, address: string): Promise<void> {
   await db.prepare(`DELETE FROM inboxes WHERE address = ?`).bind(address).run();
 }
