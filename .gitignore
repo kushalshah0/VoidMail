@@ -25,6 +25,7 @@ Thumbs.db
 # Migration docs (completed)
 MIGRATION_STATUS.md
 MIGRATION_TODO.md
+DEPLOY.md
 
 # Logs
 *.log
