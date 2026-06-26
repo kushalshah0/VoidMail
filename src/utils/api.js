@@ -1,52 +1,51 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '';
+const TIMEOUT_MS = 12000;
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      signal: controller.signal,
+      ...options,
+    });
 
-  if (!res.ok) {
-    throw new Error(data.error || `Request failed (${res.status})`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || `Request failed (${res.status})`);
+    }
+
+    return data;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  return data;
 }
 
-export function createInbox(username, ttlHours = 24) {
-  return request('/inbox', {
-    method: 'POST',
-    body: JSON.stringify({ username, ttlHours }),
-  });
+export function generateAddress() {
+  return request('/api/generate', { method: 'POST' });
 }
 
-export function getInbox(username) {
-  return request(`/inbox/${username}`);
+export function getInbox(address) {
+  return request(`/api/inbox/${encodeURIComponent(address)}`);
 }
 
-export function getEmails(username) {
-  return request(`/emails/${username}`);
+export function getInboxSince(address, sinceId) {
+  return request(`/api/inbox/${encodeURIComponent(address)}?since=${sinceId}`);
 }
 
-export function getEmail(emailId) {
-  return request(`/email/${emailId}`);
-}
-
-export function recoverInbox(username, recoveryKey) {
-  return request('/recover', {
-    method: 'POST',
-    body: JSON.stringify({ username, recoveryKey }),
-  });
-}
-
-export function deleteInbox(username, recoveryKey) {
-  return request(`/inbox/${username}`, {
-    method: 'DELETE',
-    body: JSON.stringify({ recoveryKey }),
-  });
+export function getEmail(address, emailId) {
+  return request(`/api/inbox/${encodeURIComponent(address)}`).then(data => 
+    data.messages.find(m => m.id === emailId)
+  );
 }
