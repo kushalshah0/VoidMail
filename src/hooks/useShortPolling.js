@@ -6,6 +6,8 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
   const [mode, setMode] = useState('polling');
   const mountedRef = useRef(true);
   const initializedRef = useRef(false);
+  const onNewEmailsRef = useRef(onNewEmails);
+  onNewEmailsRef.current = onNewEmails;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -17,22 +19,25 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
 
     try {
       const data = await getInboxSince(address, lastSeenId);
-      if (data.messages?.length && mountedRef.current) {
-        onNewEmails(data.messages);
-        const maxId = Math.max(...data.messages.map(m => m.id));
-        setLastSeenId(prev => Math.max(prev, maxId));
+      if (mountedRef.current) {
+        onNewEmailsRef.current(data.messages || []);
+        if (data.messages?.length) {
+          const maxId = Math.max(...data.messages.map(m => m.id));
+          setLastSeenId(prev => Math.max(prev, maxId));
+        }
       }
     } catch (err) {
       if (mountedRef.current) {
         console.error('Polling error:', err);
       }
     }
-  }, [address, lastSeenId, onNewEmails]);
+  }, [address, lastSeenId]);
 
   useEffect(() => {
     if (!address) return;
 
-    // Initial load - fetch all messages to establish baseline
+    initializedRef.current = false;
+
     const initialLoad = async () => {
       try {
         const { getInbox } = await import('../utils/api');
@@ -48,13 +53,11 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
       }
     };
 
-    initializedRef.current = false;
     initialLoad();
 
-    // Start polling
     const timer = setInterval(poll, interval);
     return () => clearInterval(timer);
-  }, [address, interval, poll]);
+  }, [address, interval]);
 
   return { mode };
 }
