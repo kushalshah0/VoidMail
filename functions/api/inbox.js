@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
       return jsonResponse({ error: 'This inbox already exists. Try a different username.' }, 409);
     }
 
-    const validTTL = Math.min(Math.max(parseInt(ttlHours) || 24, 1), 24);
+    const validTTL = Math.min(Math.max(parseInt(ttlHours) || 24, 1), 720);
     const ttlSeconds = validTTL * 3600;
 
     const recoveryKey = generateRecoveryKey();
