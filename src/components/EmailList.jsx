@@ -41,7 +41,7 @@ export default function EmailList({ emails, selectedId, onSelect }) {
         </p>
         <div className="mt-6 flex items-center gap-2 text-light-500 dark:text-dark-600 text-xs">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          Checking every 2 seconds
+          Checking every 10 seconds
         </div>
       </div>
     );
