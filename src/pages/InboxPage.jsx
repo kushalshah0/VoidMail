@@ -18,10 +18,22 @@ export default function InboxPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [showRecovery, setShowRecovery] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(null);
 
   const emailAddress = address;
   const recoveryKey = localStorage.getItem('voidmail_recovery');
   const expiresAt = localStorage.getItem('voidmail_expires');
+
+  useEffect(() => {
+    if (!expiresAt) return;
+    const update = () => {
+      const diff = Math.max(0, Math.floor((new Date(expiresAt) - Date.now()) / 1000));
+      setTimeLeft(diff);
+    };
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [expiresAt]);
 
   const fetchEmails = useCallback(async () => {
     setFetchError(null);
@@ -87,20 +99,42 @@ export default function InboxPage() {
 
       <div className="card !p-3 mb-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 
-                            bg-brand-50 dark:bg-brand-600/10 
-                            border border-brand-200 dark:border-brand-600/20 
-                            rounded-xl flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-semibold text-light-900 dark:text-white break-all">
-                {emailAddress}
-              </h1>
-            </div>
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-base sm:text-lg text-light-900 dark:text-white break-all">
+              {emailAddress}
+            </h1>
+            {timeLeft !== null && timeLeft > 0 && (
+              <span className="relative w-8 h-8 shrink-0">
+                <svg className="w-8 h-8 -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="15.5" fill="none"
+                    className="stroke-light-200 dark:stroke-dark-700"
+                    strokeWidth="3" />
+                  <circle cx="18" cy="18" r="15.5" fill="none"
+                    className={`${
+                      timeLeft > 1800 ? 'stroke-emerald-500' :
+                      timeLeft > 600  ? 'stroke-amber-500' :
+                                        'stroke-rose-500'
+                    }`}
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(timeLeft / 3600) * 97.4} 97.4`}
+                  />
+                </svg>
+                <span className={`absolute inset-0 flex items-center justify-center text-xs font-bold ${
+                  timeLeft > 1800 ? 'text-emerald-600 dark:text-emerald-400' :
+                  timeLeft > 600  ? 'text-amber-600 dark:text-amber-400' :
+                  timeLeft > 120  ? 'text-rose-600 dark:text-rose-400' :
+                                    'text-rose-600 dark:text-rose-400 animate-pulse'
+                }`}>
+                  {Math.floor(timeLeft / 60)}
+                </span>
+              </span>
+            )}
+            {timeLeft === 0 && (
+              <span className="text-xs text-red-500 dark:text-red-400 shrink-0">
+                Expired
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
