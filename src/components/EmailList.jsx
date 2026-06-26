@@ -1,4 +1,30 @@
-export default function EmailList({ emails, selectedId, onSelect, mode }) {
+const GRADIENTS = [
+  'from-blue-500 to-purple-500',
+  'from-emerald-500 to-teal-500',
+  'from-orange-500 to-red-500',
+  'from-pink-500 to-rose-500',
+  'from-violet-500 to-indigo-500',
+  'from-cyan-500 to-blue-500',
+  'from-amber-500 to-orange-500',
+  'from-lime-500 to-green-500',
+];
+
+function getGradient(name) {
+  const charCode = (name || '').charCodeAt(0) || 0;
+  return GRADIENTS[charCode % GRADIENTS.length];
+}
+
+function getInitials(from) {
+  if (!from) return '?';
+  const name = from.split('@')[0].replace(/[._-]/g, ' ').trim();
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.substring(0, 2).toUpperCase();
+}
+
+export default function EmailList({ emails, selectedId, onSelect }) {
   if (emails.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -14,30 +40,8 @@ export default function EmailList({ emails, selectedId, onSelect, mode }) {
           Emails sent to your temporary address will appear here automatically.
         </p>
         <div className="mt-6 flex items-center gap-2 text-light-500 dark:text-dark-600 text-xs">
-          {mode === 'sse' && (
-            <>
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              Live updates
-            </>
-          )}
-          {mode === 'polling' && (
-            <>
-              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Auto-refreshing every 5s
-            </>
-          )}
-          {mode === 'connecting' && (
-            <>
-              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Connecting...
-            </>
-          )}
+          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          Checking every 2 seconds
         </div>
       </div>
     );
@@ -47,8 +51,10 @@ export default function EmailList({ emails, selectedId, onSelect, mode }) {
     <div className="divide-y divide-light-200 dark:divide-dark-800">
       {emails.map((email) => {
         const isSelected = email.id === selectedId;
-        const date = new Date(email.receivedAt);
+        const date = new Date(email.received_at * 1000);
         const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const gradient = getGradient(email.from_addr);
+        const initials = getInitials(email.from_addr);
 
         return (
           <button
@@ -59,32 +65,29 @@ export default function EmailList({ emails, selectedId, onSelect, mode }) {
               ${isSelected
                 ? 'bg-brand-50 dark:bg-brand-600/10 border-l-2 border-brand-500'
                 : 'border-l-2 border-transparent'
-              }
-              ${!email.read ? 'bg-brand-50/50 dark:bg-dark-800/30' : ''}`}
+              }`}
           >
             <div className="flex items-start justify-between gap-3">
+              <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
+                <span className="text-xs font-bold text-white">{initials}</span>
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  {!email.read && (
-                    <span className="w-2 h-2 bg-brand-500 rounded-full shrink-0" />
-                  )}
                   <span className={`text-sm truncate 
-                    ${!email.read
-                      ? 'font-semibold text-light-900 dark:text-white'
-                      : 'text-light-600 dark:text-dark-300'
+                    ${email.read ? 'text-light-600 dark:text-dark-300' : 'font-semibold text-light-900 dark:text-white'
                     }`}>
-                    {email.from}
+                    {email.from_addr}
                   </span>
                 </div>
                 <p className={`text-sm truncate 
-                  ${!email.read
-                    ? 'text-light-800 dark:text-dark-200'
-                    : 'text-light-500 dark:text-dark-400'
+                  ${email.read
+                    ? 'text-light-500 dark:text-dark-400'
+                    : 'text-light-800 dark:text-dark-200'
                   }`}>
                   {email.subject || '(No Subject)'}
                 </p>
                 <p className="text-xs text-light-400 dark:text-dark-500 mt-1 truncate">
-                  {email.snippet}
+                  {email.snippet || email.text?.substring(0, 100) || 'No preview'}
                 </p>
               </div>
               <span className="text-xs text-light-400 dark:text-dark-500 shrink-0 mt-0.5">
