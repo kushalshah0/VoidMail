@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getInbox } from '../utils/api';
+import { getInbox, deleteInbox } from '../utils/api';
 import EmailList from '../components/EmailList';
 import EmailDetail from '../components/EmailDetail';
 import CopyButton from '../components/CopyButton';
@@ -17,8 +17,11 @@ export default function InboxPage() {
   const [notification, setNotification] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [showRecovery, setShowRecovery] = useState(true);
 
   const emailAddress = address;
+  const recoveryKey = localStorage.getItem('voidmail_recovery');
+  const expiresAt = localStorage.getItem('voidmail_expires');
 
   const fetchEmails = useCallback(async () => {
     setFetchError(null);
@@ -59,9 +62,21 @@ export default function InboxPage() {
     }
   };
 
-  const handleDelete = () => {
-    // Emails auto-expire after 1 hour, no manual delete needed
-    navigate('/');
+  const handleDelete = async () => {
+    if (!recoveryKey) {
+      navigate('/');
+      return;
+    }
+    if (!confirm('Delete this inbox and all emails permanently?')) return;
+    try {
+      await deleteInbox(emailAddress, recoveryKey);
+      localStorage.removeItem('voidmail_email');
+      localStorage.removeItem('voidmail_recovery');
+      localStorage.removeItem('voidmail_expires');
+      navigate('/');
+    } catch (err) {
+      setNotification({ type: 'error', message: 'Failed to delete inbox' });
+    }
   };
 
   return (
@@ -87,6 +102,11 @@ export default function InboxPage() {
                   {emailAddress}
                 </h1>
                 <CopyButton text={emailAddress} iconOnly className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 p-1.5 sm:hidden" />
+                <button onClick={handleDelete} className="p-1.5 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 sm:hidden" title="Delete inbox">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
               <div className="flex items-center gap-2">
                 <span className="sm:hidden w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -102,15 +122,56 @@ export default function InboxPage() {
             <CopyButton text={emailAddress} label="Copy" className="btn-secondary py-2 px-3 text-sm" />
             <button onClick={handleDelete} className="btn-secondary inline-flex items-center gap-1.5 py-2 px-3 text-sm 
                        text-red-500 dark:text-red-400 
-                       hover:text-red-600 dark:hover:text-red-300" title="Return to home">
+                       hover:text-red-600 dark:hover:text-red-300" title="Delete inbox">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              <span className="ml-1">Home</span>
+              <span className="ml-1">Delete</span>
             </button>
           </div>
         </div>
       </div>
+
+        {recoveryKey && showRecovery && (
+          <div className="mb-4 p-3 
+                          bg-amber-50 dark:bg-amber-500/5 
+                          border border-amber-200 dark:border-amber-500/20 
+                          rounded-xl relative">
+            <button 
+              onClick={() => setShowRecovery(false)} 
+              className="absolute top-2 right-2 text-amber-600 dark:text-amber-500 
+                         hover:text-amber-700 dark:hover:text-amber-400 p-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              <div>
+                <p className="text-sm text-amber-800 dark:text-amber-300 font-semibold pr-6">
+                  Recovery Key — Save this!
+                </p>
+                <p className="text-xs text-amber-700 dark:text-dark-400 mt-0.5">
+                  Use this key to access your inbox from another device
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-2">
+              <code className="flex-1 
+                               bg-amber-100 dark:bg-dark-800 
+                               border border-amber-200 dark:border-dark-700
+                               rounded-lg px-3 py-2 font-mono 
+                               text-amber-800 dark:text-amber-400 
+                               tracking-widest text-center text-sm break-all font-semibold">
+                {recoveryKey}
+              </code>
+              <CopyButton text={recoveryKey} iconOnly className="btn-secondary py-2 px-2 shrink-0" />
+            </div>
+          </div>
+        )}
 
       <div className="grid lg:grid-cols-5 gap-4 min-h-[60vh]">
         <div className={`lg:col-span-2 card p-0 overflow-hidden ${selectedId ? 'hidden lg:block' : ''}`}>

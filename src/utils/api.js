@@ -36,6 +36,20 @@ export function generateAddress() {
   return request('/api/generate', { method: 'POST' });
 }
 
+export function recoverInbox(recoveryKey) {
+  return request('/api/recover', {
+    method: 'POST',
+    body: JSON.stringify({ recoveryKey }),
+  });
+}
+
+export function deleteInbox(address, recoveryKey) {
+  return request(`/api/inbox/${encodeURIComponent(address)}`, {
+    method: 'DELETE',
+    body: JSON.stringify({ recoveryKey }),
+  });
+}
+
 export function getInbox(address) {
   return request(`/api/inbox/${encodeURIComponent(address)}`);
 }

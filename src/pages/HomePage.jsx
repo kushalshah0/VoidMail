@@ -1,7 +1,36 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GenerateForm from '../components/GenerateForm';
 import FeatureCard from '../components/FeatureCard';
+import { recoverInbox } from '../utils/api';
+import Notification from '../components/Notification';
 
 export default function HomePage() {
+  const [showRecover, setShowRecover] = useState(false);
+  const [recoveryKey, setRecoveryKey] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const navigate = useNavigate();
+
+  const handleRecover = async (e) => {
+    e.preventDefault();
+    if (!recoveryKey.trim()) return;
+    setLoading(true);
+    try {
+      const data = await recoverInbox(recoveryKey.toUpperCase().trim());
+      localStorage.setItem('voidmail_email', data.address);
+      localStorage.setItem('voidmail_expires', data.expiresAt);
+      navigate(`/inbox/${data.address}`);
+    } catch (err) {
+      setNotification({
+        type: 'error',
+        message: err.message || 'Invalid or expired recovery key',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const features = [
     {
       icon: (
@@ -110,6 +139,46 @@ export default function HomePage() {
             <div className="lg:col-span-2">
               <div className="card glow">
                 <GenerateForm />
+
+                <div className="mt-4 pt-4 border-t border-light-200 dark:border-dark-700">
+                  <button
+                    onClick={() => setShowRecover(!showRecover)}
+                    className="text-sm text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-medium flex items-center gap-1.5 mx-auto"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                    Recover existing inbox
+                  </button>
+
+                  {showRecover && (
+                    <form onSubmit={handleRecover} className="mt-3 space-y-3">
+                      {notification && (
+                        <Notification {...notification} onClose={() => setNotification(null)} />
+                      )}
+                      <input
+                        type="text"
+                        value={recoveryKey}
+                        onChange={(e) => {
+                          let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                          val = val.match(/.{1,4}/g)?.join('-') || val;
+                          setRecoveryKey(val.substring(0, 19));
+                        }}
+                        placeholder="XXXX-XXXX-XXXX-XXXX"
+                        className="input-field font-mono tracking-widest text-center text-sm"
+                        autoComplete="off"
+                        spellCheck="false"
+                      />
+                      <button
+                        type="submit"
+                        disabled={loading || recoveryKey.length < 19}
+                        className="btn-secondary w-full text-sm"
+                      >
+                        {loading ? 'Recovering...' : 'Access Inbox'}
+                      </button>
+                    </form>
+                  )}
+                </div>
               </div>
             </div>
           </div>

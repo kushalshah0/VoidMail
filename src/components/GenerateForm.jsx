@@ -14,7 +14,8 @@ export default function GenerateForm() {
     try {
       const data = await generateAddress();
       localStorage.setItem('voidmail_email', data.address);
-      localStorage.setItem('voidmail_expires', Date.now() + 3600000);
+      localStorage.setItem('voidmail_recovery', data.recoveryKey);
+      localStorage.setItem('voidmail_expires', data.expiresAt);
       navigate(`/inbox/${data.address}`);
     } catch (err) {
       setNotification({
