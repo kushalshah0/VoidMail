@@ -5,6 +5,7 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
   const [lastSeenId, setLastSeenId] = useState(0);
   const [mode, setMode] = useState('polling');
   const mountedRef = useRef(true);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -12,8 +13,8 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
   }, []);
 
   const poll = useCallback(async () => {
-    if (!address || !mountedRef.current) return;
-    
+    if (!address || !mountedRef.current || !initializedRef.current) return;
+
     try {
       const data = await getInboxSince(address, lastSeenId);
       if (data.messages?.length && mountedRef.current) {
@@ -30,7 +31,7 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
 
   useEffect(() => {
     if (!address) return;
-    
+
     // Initial load - fetch all messages to establish baseline
     const initialLoad = async () => {
       try {
@@ -42,11 +43,14 @@ export function useShortPolling(address, { onNewEmails }, interval = 2000) {
         }
       } catch (err) {
         console.error('Initial load error:', err);
+      } finally {
+        if (mountedRef.current) initializedRef.current = true;
       }
     };
-    
+
+    initializedRef.current = false;
     initialLoad();
-    
+
     // Start polling
     const timer = setInterval(poll, interval);
     return () => clearInterval(timer);
