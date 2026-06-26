@@ -48,7 +48,7 @@ export default function InboxPage() {
       }
       setLastUpdated(new Date());
     },
-  }, 2000);
+  }, 10000);
 
   useEffect(() => {
     fetchEmails();
@@ -85,9 +85,9 @@ export default function InboxPage() {
         <Notification {...notification} onClose={() => setNotification(null)} />
       )}
 
-      <div className="card mb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+      <div className="card !p-3 mb-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 sm:w-12 sm:h-12 
                             bg-brand-50 dark:bg-brand-600/10 
                             border border-brand-200 dark:border-brand-600/20 
@@ -97,36 +97,18 @@ export default function InboxPage() {
               </svg>
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-semibold text-light-900 dark:text-white truncate max-w-[150px] sm:max-w-none">
-                  {emailAddress}
-                </h1>
-                <CopyButton text={emailAddress} iconOnly className="text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 p-1.5 sm:hidden" />
-                <button onClick={handleDelete} className="p-1.5 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 sm:hidden" title="Delete inbox">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="sm:hidden w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="hidden sm:inline badge-green text-xs">Active</span>
-                <span className="text-light-500 dark:text-dark-500 text-xs">
-                  Auto-expires in 1 hour
-                </span>
-              </div>
+              <h1 className="text-base sm:text-lg font-semibold text-light-900 dark:text-white break-all">
+                {emailAddress}
+              </h1>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2">
-            <CopyButton text={emailAddress} label="Copy" className="btn-secondary py-2 px-3 text-sm" />
-            <button onClick={handleDelete} className="btn-secondary inline-flex items-center gap-1.5 py-2 px-3 text-sm 
-                       text-red-500 dark:text-red-400 
-                       hover:text-red-600 dark:hover:text-red-300" title="Delete inbox">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <CopyButton text={emailAddress} iconOnly className="btn-secondary p-1.5" />
+            <button onClick={handleDelete} className="btn-secondary p-1.5 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300" title="Delete inbox">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              <span className="ml-1">Delete</span>
             </button>
           </div>
         </div>
@@ -180,15 +162,12 @@ export default function InboxPage() {
               Inbox ({emails.length})
             </h2>
             <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${mode === 'polling' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
               {lastUpdated && (
-                <span className="text-xs text-light-400 dark:text-dark-500">
+                <span className="text-xs font-medium text-light-500 dark:text-dark-400 whitespace-nowrap">
                   {lastUpdated.toLocaleTimeString()}
                 </span>
               )}
-              <span className="flex items-center gap-1 text-xs text-light-500 dark:text-dark-400">
-                <span className={`w-2 h-2 rounded-full ${mode === 'polling' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
-                {mode === 'polling' ? 'Live' : 'Connecting...'}
-              </span>
               <button onClick={fetchEmails} className="p-1.5 text-light-500 dark:text-dark-400 hover:text-light-700 dark:hover:text-white" title="Refresh">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
